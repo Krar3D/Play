@@ -441,6 +441,671 @@
             }
 
             document.getElementById('final-score').innerText = `${score} / 5`; 
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>قتال التنين - معلومات عامة</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+
+        :root {
+            --bg-grad-1: #1a0b1c; 
+            --bg-grad-2: #0d0510;
+            --ui-glow: rgba(150, 0, 255, 0.3);
+            --player-color: #00ff9d;
+            --boss-color: #ff5500; 
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%; margin: 0; padding: 0;
+            background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
+            color: white; font-family: 'Tajawal', sans-serif;
+            overflow: hidden; overscroll-behavior: none; touch-action: none;
+        }
+
+        /* تأثير اهتزاز الشاشة */
+        .shake-screen { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-4px, 0, 0); }
+            20%, 80% { transform: translate3d(6px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-10px, 0, 0); }
+            40%, 60% { transform: translate3d(10px, 0, 0); }
+        }
+
+        /* ------------------ أشرطة الصحة والتحكم ------------------ */
+        .top-hud {
+            position: fixed; top: 15px; left: 15px; right: 15px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000; pointer-events: none;
+        }
+        .mute-btn {
+            background: rgba(0,0,0,0.6); border: 1px solid var(--ui-glow); color: white;
+            border-radius: 50%; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; pointer-events: auto;
+            box-shadow: 0 0 10px rgba(150, 0, 255, 0.4); transition: 0.3s;
+        }
+        
+        .health-boards {
+            position: fixed; top: 75px; left: 15px; right: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 100; gap: 20px;
+        }
+
+        .hp-container {
+            flex: 1; background: rgba(0,0,0,0.6); padding: 8px; border-radius: 12px;
+            border: 2px solid #333; position: relative; transition: all 0.3s;
+        }
+        .hp-container.player { border-color: rgba(0, 255, 157, 0.4); box-shadow: 0 0 15px rgba(0, 255, 157, 0.1); }
+        .hp-container.boss { border-color: rgba(255, 85, 0, 0.4); box-shadow: 0 0 15px rgba(255, 85, 0, 0.1); }
+
+        .hp-name { font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; display: flex; justify-content: space-between;}
+        .hp-name.player { color: var(--player-color); }
+        .hp-name.boss { color: var(--boss-color); flex-direction: row-reverse;}
+
+        .hp-bar-bg { width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; overflow: hidden; }
+        .hp-bar { height: 100%; width: 100%; border-radius: 6px; transition: width 0.5s ease-out, background 0.3s; }
+        .hp-bar.player { background: linear-gradient(90deg, #00b09b, var(--player-color)); }
+        .hp-bar.boss { background: linear-gradient(90deg, #cb2d3e, var(--boss-color)); transform-origin: right; float: right;}
+
+        /* ------------------ ساحة المعركة ------------------ */
+        .arena {
+            position: absolute; top: 20%; left: 0; width: 100%; height: 35%;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 10vw; perspective: 800px;
+        }
+
+        .character {
+            font-size: 5rem; position: relative; z-index: 10;
+            filter: drop-shadow(0 15px 10px rgba(0,0,0,0.6));
+            transition: transform 0.3s ease;
+        }
+
+        .player-char { text-shadow: 0 0 30px rgba(0, 255, 157, 0.5); }
+        .boss-char { text-shadow: 0 0 30px rgba(255, 85, 0, 0.5); } 
+
+        /* درع الصد */
+        .shield-fx {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            width: 140px; height: 140px; border-radius: 50%; border: 4px solid #00aaff;
+            background: rgba(0, 170, 255, 0.2); box-shadow: 0 0 30px rgba(0, 170, 255, 0.6);
+            opacity: 0; pointer-events: none; transition: all 0.3s ease-out; z-index: 5;
+        }
+        .shield-fx.active { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+        @keyframes playerAttack {
+            0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+            50% { transform: translateX(-60px) rotate(-15deg) scale(1.1); }
+        }
+        @keyframes bossAttack {
+            0%, 100% { transform: translateX(0) rotate(0deg) scale(1); }
+            50% { transform: translateX(60px) rotate(15deg) scale(1.1); }
+        }
+        @keyframes takeDamage {
+            0%, 100% { transform: translateX(0) scale(1); filter: brightness(1); }
+            25% { transform: translateX(-5px) scale(0.9); filter: brightness(2) hue-rotate(-50deg); }
+            75% { transform: translateX(5px) scale(0.9); filter: brightness(2) hue-rotate(-50deg); }
+        }
+
+        .anim-p-attack { animation: playerAttack 0.4s ease-in-out; }
+        .anim-b-attack { animation: bossAttack 0.4s ease-in-out; }
+        .anim-damage { animation: takeDamage 0.4s ease-in-out; }
+
+        /* مؤثر السيف والضربة */
+        .slash-fx {
+            position: absolute; font-size: 4rem; opacity: 0; pointer-events: none;
+            z-index: 20; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+        @keyframes slashAnim {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5) rotate(-45deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(45deg); }
+        }
+        .slash-fx.active { animation: slashAnim 0.4s ease-out; }
+        
+        .crit-text {
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            color: #ffd700; font-weight: 900; font-size: 1.5rem; text-shadow: 0 0 10px #ff3232;
+            opacity: 0; pointer-events: none; z-index: 30; white-space: nowrap;
+        }
+        @keyframes popUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(0.5); } 100% { opacity: 0; transform: translate(-50%, -50px) scale(1.2); } }
+        .crit-text.active { animation: popUp 0.8s ease-out forwards; }
+
+        /* ------------------ واجهة الأسئلة ------------------ */
+        .ui-layer {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 100;
+            background: rgba(15, 10, 25, 0.95); border-top: 2px solid var(--ui-glow);
+            padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            border-radius: 25px 25px 0 0; width: 100%; max-width: 600px; text-align: center;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
+            max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+        }
+        .ui-layer::-webkit-scrollbar { width: 5px; } .ui-layer::-webkit-scrollbar-thumb { background: #9600ff; border-radius: 5px; }
+
+        .top-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .q-counter { font-size: 0.95rem; color: #fff; font-weight: bold; margin: 0; background: rgba(150, 0, 255, 0.5); padding: 4px 15px; border-radius: 12px; border: 1px solid #9600ff;}
+        .shield-btn { background: #00aaff; border: none; padding: 6px 15px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: 'Tajawal', sans-serif;}
+        .shield-btn:disabled { background: #555; color: #aaa; cursor: default; border: 1px solid #333;}
+        .shield-btn.active-glow { box-shadow: 0 0 15px rgba(0, 170, 255, 0.8); border: 2px solid #fff;}
+
+        .timer-container { width: 100%; height: 5px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 15px; }
+        .timer-bar { height: 100%; width: 100%; background: #00ff9d; transition: width 1s linear, background 0.3s; }
+        .timer-warning { background: #ff3232 !important; }
+
+        h2 { margin: 0 0 15px 0; color: #fff; font-size: 1.1rem; line-height: 1.5; }
+        
+        .options { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        button.opt-btn { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 12px; font-size: 0.95rem; font-family: 'Tajawal', sans-serif; cursor: pointer; transition: all 0.2s; text-align: center; font-weight: bold;}
+        button.opt-btn:disabled { opacity: 0.8; cursor: default; }
+
+        .speech-bubble { background: white; color: black; padding: 6px 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 900; margin-bottom: 15px; display: none; opacity: 0; transition: opacity 0.3s; }
+
+        #explanation-box { display: none; margin-top: 15px; background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); animation: fadeIn 0.4s; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        #explanation-box h3 { margin: 0 0 10px 0; font-size: 1.05rem; }
+        #explanation-box p { margin: 0 0 15px 0; font-size: 0.9rem; line-height: 1.6; color: #e2e8f0; }
+
+        #next-btn { background: linear-gradient(90deg, #9600ff, #00ff9d); color: #000; font-weight: 900; width: 100%; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-size: 1.1rem; }
+
+        /* شاشة النهاية ونظام التقييم */
+        #completion-screen { display: none; animation: fadeIn 0.8s; }
+        .trophy { font-size: 4rem; margin: 0; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));}
+        .stars-container { font-size: 2.5rem; letter-spacing: 5px; color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); margin: 5px 0; min-height: 50px;}
+        .score-text { font-size: 2.2rem; margin: 10px 0; font-weight: 900; }
+        #final-desc { font-size: 1rem; color: #aaa; margin-bottom: 20px; line-height: 1.5; }
+        
+        .action-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .action-btns button { flex: 1; border: none; font-weight: bold; color: #000; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 1rem;}
+        .btn-restart { background: #fff; }
+        .btn-review { background: #9600ff; color: white !important;}
+
+        #review-screen { display: none; text-align: right; }
+        .review-item { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .review-q { font-weight: bold; color: #fff; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.4; }
+        .review-ans { font-size: 0.9rem; margin-bottom: 8px; }
+        .ans-correct { background: rgba(0, 255, 150, 0.2); color: #00ff9d; padding: 2px 6px; border-radius: 4px;}
+        .ans-wrong { background: rgba(255, 50, 50, 0.2); color: #ff3232; padding: 2px 6px; border-radius: 4px;}
+        .review-exp { font-size: 0.85rem; color: #aaa; margin-top: 10px; border-top: 1px dashed #444; padding-top: 10px; }
+        .close-review-btn { width: 100%; background: #ef4444; color: white; border: none; font-weight: bold; margin-top: 10px; padding: 15px; border-radius: 10px; cursor: pointer; font-size: 1.1rem;}
+
+        .confetti { position: fixed; width: 10px; height: 10px; background-color: #f00; z-index: 9999; animation: fall 3s linear forwards; pointer-events: none; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- أدوات الواجهة العلوية (كتم الصوت) -->
+    <div class="top-hud">
+        <div></div> <!-- مساحة فارغة لترتيب الزر -->
+        <button class="mute-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
+    </div>
+
+    <!-- أشرطة الصحة -->
+    <div class="health-boards">
+        <div class="hp-container player">
+            <div class="hp-name player"><span>🥷 البطل</span> <span id="p-hp-txt">100%</span></div>
+            <div class="hp-bar-bg"><div class="hp-bar player" id="p-hp-bar"></div></div>
+        </div>
+        <div class="hp-container boss">
+            <div class="hp-name boss"><span>التنين 🐉</span> <span id="b-hp-txt">100%</span></div>
+            <div class="hp-bar-bg"><div class="hp-bar boss" id="b-hp-bar"></div></div>
+        </div>
+    </div>
+
+    <!-- ساحة القتال -->
+    <div class="arena">
+        <div class="character player-char" id="player-sprite">
+            🥷
+            <div class="shield-fx" id="p-shield"></div>
+            <div class="slash-fx" id="boss-hit-fx">💥</div>
+            <div class="crit-text" id="p-heal-txt">🧪 كومبو!</div>
+        </div>
+        <div class="character boss-char" id="boss-sprite">
+            🐉
+            <div class="slash-fx" id="player-hit-fx">🔥</div>
+            <div class="crit-text" id="b-crit-txt">أداء مثالي! ⚡</div>
+        </div>
+    </div>
+
+    <!-- واجهة الأسئلة -->
+    <div class="ui-layer" id="ui-container">
+        <div id="quiz-content">
+            <div class="top-tools">
+                <div class="q-counter" id="q-counter">الجولة 1 من 10</div>
+                <button class="shield-btn" id="shield-btn" onclick="activateShield()">🛡️ تفعيل الدرع (1)</button>
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+
+            <h2 id="question-text">جاري التحميل...</h2>
+            
+            <div class="speech-bubble" id="speech-bubble"></div>
+
+            <div class="options" id="options-container"></div>
+            
+            <div id="explanation-box">
+                <h3 id="result-title"></h3>
+                <p id="explanation-text"></p>
+                <button id="next-btn" onclick="moveToNext()">الجولة القادمة ⚔️</button>
+            </div>
+        </div>
+        
+        <div id="completion-screen">
+            <div class="trophy" id="final-trophy">🏆</div>
+            <div class="stars-container" id="final-stars"></div>
+            <h2 id="final-praise">جاري الحساب...</h2>
+            <p id="final-desc">جاري التقييم...</p>
+            
+            <div class="score-text" id="final-score">0 / 10</div>
+            
+            <div class="action-btns">
+                <button class="btn-review" onclick="showReview()">سجل المعركة 📋</button>
+                <button class="btn-restart" onclick="startFresh()">معركة جديدة 🔄</button>
+            </div>
+        </div>
+
+        <div id="review-screen">
+            <h2 style="text-align: center; color: #fff; margin-top: 0;">سجل الضربات</h2>
+            <div id="review-list"></div>
+            <button class="close-review-btn" onclick="startFresh()">إنهاء المعركة</button>
+        </div>
+    </div>
+
+    <script>
+        // ------------------ نظام الصوت والموسيقى ------------------
+        let audioCtx = null;
+        let isMuted = false;
+        
+        // موسيقى خلفية ملحمية (رابط مجاني يعمل كخلفية للقتال)
+        let bgMusic = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.3;
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            bgMusic.muted = isMuted;
+            document.getElementById('mute-btn').innerText = isMuted ? '🔇' : '🔊';
+            
+            if (audioCtx) {
+                if (isMuted) audioCtx.suspend();
+                else audioCtx.resume();
+            }
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended' && !isMuted) audioCtx.resume();
+            
+            if (bgMusic.paused && !isMuted) {
+                bgMusic.play().catch(e => console.log("المتصفح منع تشغيل الموسيقى التلقائي"));
+            }
+        }
+
+        function playSound(type) {
+            if (!audioCtx || isMuted) return;
+            const osc = audioCtx.createOscillator(); 
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            
+            if (type === 'slash') { 
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2); 
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'hit') { 
+                osc.type = 'square'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2); 
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'shield') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'heal') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.4);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'tick') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            }
+        }
+
+        function triggerVibration(type) {
+            if (!navigator.vibrate) return;
+            if (type === 'click') navigator.vibrate(30);
+            else if (type === 'hit') navigator.vibrate([100, 50, 100]); 
+            else if (type === 'damage') navigator.vibrate(300); 
+            else if (type === 'crit') navigator.vibrate([150, 50, 150, 50, 150]); 
+            else if (type === 'shield') navigator.vibrate(50);
+        }
+
+        function createParticles(targetType) {
+            const arena = document.querySelector('.arena');
+            const target = targetType === 'boss' ? document.getElementById('boss-sprite') : document.getElementById('player-sprite');
+            const colors = targetType === 'boss' ? ['#ff5500', '#ff0000', '#ffd700'] : ['#00ff9d', '#ffffff', '#00aaff'];
+            
+            const rect = target.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < 20; i++) {
+                let p = document.createElement('div');
+                p.style.position = 'fixed'; p.style.width = '10px'; p.style.height = '10px';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                p.style.borderRadius = '50%'; p.style.pointerEvents = 'none'; p.style.zIndex = '1000';
+                p.style.left = centerX + 'px'; p.style.top = centerY + 'px';
+                
+                let angle = Math.random() * Math.PI * 2;
+                let speed = Math.random() * 80 + 40;
+                let tx = Math.cos(angle) * speed;
+                let ty = Math.sin(angle) * speed;
+                
+                p.animate([
+                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+                ], { duration: 500, easing: 'ease-out' });
+                
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 500);
+            }
+        }
+
+        // الأسئلة 
+        let quizData = [
+            { q: "ما هو العنصر الكيميائي الأكثر وفرة في الغلاف الجوي للأرض؟", options: ["الأوكسجين", "النيتروجين", "الهيدروجين", "الكاربون"], correct: 1, explanation: "النيتروجين يشكل حوالي 78% من الغلاف الجوي للأرض." },
+            { q: "من هو القائد العسكري الذي هزم نابليون في معركة واترلو؟", options: ["نيلسون", "دوق ولينغتون", "ألكسندر الأول", "كوتوزوف"], correct: 1, explanation: "دوق ولينغتون البريطاني هو من قاد قوات الحلفاء لهزيمة نابليون عام 1815." },
+            { q: "ما هو أعمق خندق محيطي في العالم؟", options: ["خندق تونغا", "خندق ماريانا", "خندق بورتوريكو", "خندق اليابان"], correct: 1, explanation: "خندق ماريانا في المحيط الهادئ هو أعمق نقطة معروفة على سطح الأرض." },
+            { q: "أي عضو في جسم الإنسان يستهلك النسبة الأكبر من طاقة الجسم؟", options: ["القلب", "الكبد", "الدماغ", "العضلات"], correct: 2, explanation: "الدماغ يستهلك حوالي 20% من طاقة الجسم رغم صغر حجمه." },
+            { q: "في أي عام تم إطلاق أول قمر صناعي (سبوتنيك 1) إلى الفضاء؟", options: ["1957", "1961", "1969", "1953"], correct: 0, explanation: "أطلق الاتحاد السوفيتي سبوتنيك 1 في عام 1957 لتبدأ عصر الفضاء." },
+            { q: "ما هي أصغر دولة في العالم من حيث المساحة؟", options: ["موناكو", "سان مارينو", "الفاتيكان", "ليختنشتاين"], correct: 2, explanation: "الفاتيكان هي أصغر دولة مستقلة في العالم." },
+            { q: "من هو الفيلسوف اليوناني الذي كان تلميذاً لسقراط ومعلماً لأرسطو؟", options: ["فيثاغورس", "ديوجين", "أفلاطون", "إبيقور"], correct: 2, explanation: "أفلاطون تتلمذ على يد سقراط، وأسس الأكاديمية التي درس فيها أرسطو." },
+            { q: "ما هو الاسم القديم لمدينة إسطنبول قبل أن تُسمى القسطنطينية؟", options: ["روما الجديدة", "بيزنطة", "أثينا الصغرى", "الأناضول"], correct: 1, explanation: "كانت تُعرف قديماً باسم بيزنطة قبل أن يغير الإمبراطور قسطنطين اسمها." },
+            { q: "أي من هذه اللغات تُعتبر أقدم لغة مكتوبة في العالم؟", options: ["الهيروغليفية", "السومرية", "الصينية القديمة", "السنسكريتية"], correct: 1, explanation: "اللغة السومرية في بلاد الرافدين (العراق) تُعتبر أقدم لغة موثقة كتابياً بالكتابة المسمارية." },
+            { q: "ما هو المعدن الذي يُعتبر المكون الأساسي لحجر الزمرد الكريم؟", options: ["الكوارتز", "البريل", "الكوروندوم", "التوباز"], correct: 1, explanation: "الزمرد هو صنف من معدن البريل يكتسب لونه الأخضر من شوائب الكروم." }
+        ];
+
+        let totalQuestions = quizData.length;
+        let damagePerHit = 100 / totalQuestions; 
+        
+        let currentQ = 0; let score = 0; let userAnswers = [];
+        let timeLeft = 30; let maxTime = 30; let timerInterval; let tickInterval;
+        
+        let playerHP = 100;
+        let bossHP = 100;
+        let comboStreak = 0;
+        let isShieldAvailable = true;
+        let isShieldActive = false;
+
+        const pSprite = document.getElementById('player-sprite');
+        const bSprite = document.getElementById('boss-sprite');
+        const pHitFx = document.getElementById('player-hit-fx');
+        const bHitFx = document.getElementById('boss-hit-fx');
+        const pShield = document.getElementById('p-shield');
+        const bCritTxt = document.getElementById('b-crit-txt');
+        const pHealTxt = document.getElementById('p-heal-txt');
+        
+        const pBar = document.getElementById('p-hp-bar');
+        const bBar = document.getElementById('b-hp-bar');
+        const pTxt = document.getElementById('p-hp-txt');
+        const bTxt = document.getElementById('b-hp-txt');
+
+        const bubble = document.getElementById('speech-bubble'); 
+        const qText = document.getElementById('question-text'); const optsContainer = document.getElementById('options-container');
+        const expBox = document.getElementById('explanation-box'); const resTitle = document.getElementById('result-title');
+        const expText = document.getElementById('explanation-text'); const nextBtn = document.getElementById('next-btn');
+        const timerBar = document.getElementById('timer-bar'); const uiContainer = document.getElementById('ui-container');
+        const shieldBtn = document.getElementById('shield-btn');
+        const finalStars = document.getElementById('final-stars');
+
+        function updateHPUI() {
+            pBar.style.width = `${bossHP <= 0 ? 0 : playerHP}%`; 
+            pTxt.innerText = `${Math.ceil(playerHP)}%`;
+            
+            bBar.style.width = `${bossHP}%`; 
+            bTxt.innerText = `${Math.ceil(bossHP)}%`;
+            
+            if(playerHP <= 40) pBar.style.background = "linear-gradient(90deg, #ff9d00, #ff3232)";
+            else pBar.style.background = "linear-gradient(90deg, #00b09b, var(--player-color))";
+        }
+
+        function activateShield() {
+            if (isShieldAvailable && !isShieldActive) {
+                triggerVibration('shield');
+                playSound('shield');
+                isShieldActive = true;
+                isShieldAvailable = false;
+                shieldBtn.innerText = "🛡️ درع مُفعل!";
+                shieldBtn.classList.add('active-glow');
+                shieldBtn.disabled = true;
+                pShield.classList.add('active'); 
+            }
+        }
+
+        function startFresh() {
+            initAudio(); // تفعيل الصوت والموسيقى بالبداية
+            document.getElementById('completion-screen').style.display = 'none';
+            document.getElementById('review-screen').style.display = 'none';
+            document.getElementById('quiz-content').style.display = 'block';
+            
+            currentQ = 0; score = 0; userAnswers = [];
+            playerHP = 100; bossHP = 100; comboStreak = 0;
+            isShieldAvailable = true; isShieldActive = false;
+            totalQuestions = quizData.length;
+            damagePerHit = 100 / totalQuestions;
+            
+            shieldBtn.innerText = "🛡️ تفعيل الدرع (1)";
+            shieldBtn.classList.remove('active-glow');
+            shieldBtn.disabled = false;
+            pShield.classList.remove('active');
+            
+            updateHPUI();
+            
+            pSprite.innerText = "🥷"; pSprite.appendChild(bHitFx); pSprite.appendChild(pShield); pSprite.appendChild(pHealTxt);
+            bSprite.innerText = "🐉"; bSprite.appendChild(pHitFx); bSprite.appendChild(bCritTxt);
+
+            loadQ();
+        }
+
+        function startTimer() {
+            timeLeft = maxTime;
+            timerBar.style.width = '100%'; timerBar.classList.remove('timer-warning');
+            clearInterval(timerInterval); clearInterval(tickInterval);
+            
+            if(!isMuted) tickInterval = setInterval(() => playSound('tick'), 1000);
+
+            timerInterval = setInterval(() => {
+                timeLeft--; timerBar.style.width = `${(timeLeft / maxTime) * 100}%`;
+                if (timeLeft === 5) { timerBar.classList.add('timer-warning'); clearInterval(tickInterval); if(!isMuted) tickInterval = setInterval(() => playSound('tick'), 300); }
+                if (timeLeft <= 0) { clearInterval(timerInterval); clearInterval(tickInterval); checkAns(-1, null); }
+            }, 1000);
+        }
+
+        function loadQ() {
+            if (currentQ >= quizData.length) {
+                showCompletion();
+                return;
+            }
+            
+            document.body.classList.remove('shake-screen');
+            pSprite.classList.remove('anim-p-attack', 'anim-damage');
+            bSprite.classList.remove('anim-b-attack', 'anim-damage');
+            pHitFx.classList.remove('active'); bHitFx.classList.remove('active');
+            bCritTxt.classList.remove('active'); pHealTxt.classList.remove('active');
+
+            const current = quizData[currentQ];
+            document.getElementById('q-counter').innerText = `الجولة ${currentQ + 1} من ${totalQuestions}`;
+            qText.innerText = current.q; 
+            
+            optsContainer.innerHTML = '';
+            expBox.style.display = 'none'; bubble.style.display = 'none'; bubble.style.opacity = '0';
+            
+            let btnText = (currentQ === quizData.length - 1) ? "إنهاء المعركة 🏁" : "الجولة القادمة ⚔️";
+            nextBtn.innerText = btnText;
+            nextBtn.style.background = (currentQ === quizData.length - 1) ? "linear-gradient(90deg, #ff9d00, #ff3232)" : "linear-gradient(90deg, #9600ff, #00ff9d)";
+
+            current.options.forEach((opt, idx) => {
+                let btn = document.createElement('button'); btn.className = 'opt-btn'; btn.innerText = opt;
+                btn.onclick = () => { initAudio(); triggerVibration('click'); checkAns(idx, btn); };
+                optsContainer.appendChild(btn);
+            });
+            startTimer(); uiContainer.scrollTop = 0;
+        }
+
+        function checkAns(idx, btn) {
+            clearInterval(timerInterval); clearInterval(tickInterval);
+            
+            pSprite.classList.remove('anim-p-attack', 'anim-damage');
+            bSprite.classList.remove('anim-b-attack', 'anim-damage');
+            void pSprite.offsetWidth; void bSprite.offsetWidth;
+
+            const timeTaken = maxTime - timeLeft;
+            const current = quizData[currentQ]; const btns = optsContainer.querySelectorAll('button');
+            const isCorrect = (idx === current.correct); const isTimeout = (idx === -1);
+            
+            // سرعة الإجابة (إذا جابها بأول 5 ثواني) تنطي دبل نقاط
+            const isFast = (isCorrect && timeTaken <= 5 && !isTimeout);
+
+            userAnswers.push({
+                question: current.q, userPicked: isTimeout ? "لم يُجب (انتهى الوقت)" : current.options[idx],
+                correctAnswer: current.options[current.correct], isCorrect: isCorrect, explanation: current.explanation
+            });
+            
+            btns.forEach(b => b.disabled = true);
+            btns[current.correct].style.background = 'rgba(0, 255, 150, 0.4)'; btns[current.correct].style.borderColor = '#00ff9d';
+            if(!isCorrect && !isTimeout) { btn.style.background = 'rgba(255, 50, 50, 0.4)'; btn.style.borderColor = '#ff3232'; }
+
+            bubble.style.display = 'block'; setTimeout(() => bubble.style.opacity = '1', 10);
+
+            if (isCorrect) {
+                comboStreak++;
+                score += isFast ? 2 : 1; 
+                playSound('slash');
+                
+                bossHP -= damagePerHit;
+                if(bossHP < 0.1) bossHP = 0; 
+
+                pSprite.classList.add('anim-p-attack');
+                setTimeout(() => { 
+                    bSprite.classList.add('anim-damage'); 
+                    bHitFx.classList.add('active'); 
+                    createParticles('boss'); 
+                    if (isFast) {
+                        triggerVibration('crit');
+                        bCritTxt.classList.add('active');
+                    } else {
+                        triggerVibration('hit');
+                    }
+                }, 150);
+
+                let titleText = isFast ? `⚡ أداء مثالي! (+2 نقطة)` : `⚔️ ضربة ناجحة (+1 نقطة)`;
+                
+                if (comboStreak === 3) {
+                    playerHP = Math.min(100, playerHP + damagePerHit); 
+                    comboStreak = 0; 
+                    playSound('heal');
+                    pHealTxt.innerText = `+${Math.ceil(damagePerHit)}% 🧪`;
+                    pHealTxt.classList.add('active');
+                    titleText += " + 🧪 كومبو علاجي!";
+                }
+
+                resTitle.innerText = titleText; resTitle.style.color = isFast ? "#ffd700" : "#00ff9d";
+                bubble.innerText = isFast ? "خوش سرعة! 🔥" : "هجوم ناجح! 🥷"; bubble.style.color = "#059669";
+
+            } else {
+                comboStreak = 0; 
+                bSprite.classList.add('anim-b-attack');
+
+                if (isShieldActive) {
+                    isShieldActive = false;
+                    shieldBtn.innerText = "🛡️ الدرع تكسر!";
+                    shieldBtn.classList.remove('active-glow');
+                    playSound('shield');
+                    
+                    setTimeout(() => { 
+                        pShield.classList.remove('active'); 
+                        pHitFx.innerText = "🛡️"; pHitFx.classList.add('active');
+                    }, 150);
+                    
+                    resTitle.innerText = "🛡️ الدرع صد الضربة!"; resTitle.style.color = "#00aaff";
+                    bubble.innerText = "حماك الدرع هالمرة! 💨"; bubble.style.color = "#00aaff";
+                } else {
+                    playSound('hit'); 
+                    playerHP -= damagePerHit; 
+                    if(playerHP < 0.1) playerHP = 0;
+                    
+                    setTimeout(() => { 
+                        pSprite.classList.add('anim-damage'); 
+                        pHitFx.innerText = "🔥"; pHitFx.classList.add('active'); 
+                        createParticles('player');
+                        document.body.classList.add('shake-screen');
+                        triggerVibration('damage');
+                    }, 150);
+                    
+                    if (isTimeout) { resTitle.innerText = "⏰ تلقيت ضربة!"; bubble.innerText = "احذر الوقت! ⏰"; } 
+                    else { resTitle.innerText = "❌ تلقيت ضرر!"; bubble.innerText = "دفاعك مكشوف! 🐉"; }
+                    resTitle.style.color = "#ff3232"; bubble.style.color = "#dc2626";
+                }
+            }
+
+            updateHPUI();
+            expText.innerText = current.explanation; expBox.style.display = 'block';
+            setTimeout(() => { uiContainer.scrollTo({ top: uiContainer.scrollHeight, behavior: 'smooth' }); }, 100);
+        }
+
+        function moveToNext() {
+            triggerVibration('click');
+            currentQ++;
+            loadQ(); 
+        }
+
+        function shootConfetti() {
+            const colors = ['#00ff9d', '#9600ff', '#ffd700', '#ffffff'];
+            for (let i = 0; i < 60; i++) {
+                let conf = document.createElement('div'); conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw'; conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 2 + 2) + 's'; conf.style.top = '-' + (Math.random() * 20 + 10) + 'px';
+                document.body.appendChild(conf); setTimeout(() => conf.remove(), 4000);
+            }
+        }
+
+        function showCompletion() {
+            document.getElementById('quiz-content').style.display = 'none'; bubble.style.display = 'none'; 
+            
+            const praiseText = document.getElementById('final-praise'); const descText = document.getElementById('final-desc');
+            const finalScoreObj = document.getElementById('final-score'); const trophy = document.getElementById('final-trophy');
+            
+            finalStars.innerText = ""; // تصفير النجوم بالبداية
+
+            if (playerHP > bossHP) {
+                // نظام النجوم اذا فاز
+                if (playerHP >= 80) finalStars.innerText = "⭐⭐⭐";
+                else if (playerHP >= 40) finalStars.innerText = "⭐⭐";
+                else finalStars.innerText = "⭐";
+
+                praiseText.innerText = "الانتصار! 🏆"; praiseText.style.color = "#00ff9d"; finalScoreObj.style.color = "#00ff9d";
+                descText.innerText = bossHP === 0 ? "عاشت ايدك! جاوبت كل الأسئلة وقضيت عالتنين نهائياً." : "قضيت على التنين بمهارة! دمك بقى أعلى منه بنهاية المعركة."; 
+                trophy.innerText = "🥷"; bSprite.innerText = "💀"; playSound('slash'); shootConfetti();
+            } else if (playerHP === bossHP) {
+                praiseText.innerText = "تعادل! ⚔️"; praiseText.style.color = "#ffd700"; finalScoreObj.style.color = "#ffd700";
+                descText.innerText = "المعركة انتهت بالتعادل. اثنينكم تعبتوا، تحتاج تدريب أكثر للمواجهة الجاية."; 
+                trophy.innerText = "⚖️"; 
+            } else {
+                praiseText.innerText = "هزيمة! 💀"; praiseText.style.color = "#ff3232"; finalScoreObj.style.color = "#ff3232";
+                descText.innerText = "التنين تفوق عليك هالمرة.. راجع معلوماتك وارجع انتقم!"; 
+                trophy.innerText = "🐉"; pSprite.innerText = "👻"; playSound('hit');
+            }
+
+            document.getElementById('final-score').innerText = `إجمالي النقاط: ${score}`; 
             document.getElementById('completion-screen').style.display = 'block'; uiContainer.scrollTop = 0;
         }
 
@@ -450,14 +1115,16 @@
 
             userAnswers.forEach((ans, index) => {
                 let div = document.createElement('div'); div.className = 'review-item';
-                let userStatus = ans.isCorrect ? `<span class="ans-correct">✅ ${ans.userPicked}</span>` : `<span class="ans-wrong">❌ ${ans.userPicked}</span> (الصحيح: ${ans.correctAnswer})`;
+                let userStatus = ans.isCorrect ? `<span class="ans-correct">✅ ${ans.userPicked}</span>` : `<span class="ans-wrong">❌ ${ans.userPicked}</span> <br>(الصحيح: ${ans.correctAnswer})`;
                 div.innerHTML = `<div class="review-q">الجولة ${index + 1}: ${ans.question}</div><div class="review-ans">إجابتك: ${userStatus}</div><div class="review-exp">💡 <b>توضيح:</b> ${ans.explanation}</div>`;
                 reviewList.appendChild(div);
             });
             document.getElementById('review-screen').style.display = 'block'; uiContainer.scrollTop = 0;
         }
 
+        // بدء اللعبة
         startFresh();
     </script>
 </body>
 </html>
+
