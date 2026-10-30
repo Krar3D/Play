@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>قتال التنين - معلومات عامة</title>
+    <title>قتال التنين - مرونة الطلب والعرض</title>
+    
+    <!-- إضافة مكتبة MathJax للمعادلات الرياضية -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
 
@@ -25,7 +30,6 @@
             overflow: hidden; overscroll-behavior: none; touch-action: none;
         }
 
-        /* تأثير اهتزاز الشاشة */
         .shake-screen { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
         @keyframes shake {
             10%, 90% { transform: translate3d(-4px, 0, 0); }
@@ -34,7 +38,6 @@
             40%, 60% { transform: translate3d(10px, 0, 0); }
         }
 
-        /* ------------------ أشرطة الصحة والتحكم ------------------ */
         .top-hud {
             position: fixed; top: 15px; left: 15px; right: 15px;
             display: flex; justify-content: space-between; align-items: center; z-index: 1000; pointer-events: none;
@@ -68,7 +71,6 @@
         .hp-bar.player { background: linear-gradient(90deg, #00b09b, var(--player-color)); }
         .hp-bar.boss { background: linear-gradient(90deg, #cb2d3e, var(--boss-color)); transform-origin: right; float: right;}
 
-        /* ------------------ ساحة المعركة ------------------ */
         .arena {
             position: absolute; top: 20%; left: 0; width: 100%; height: 35%;
             display: flex; justify-content: space-between; align-items: center;
@@ -84,7 +86,6 @@
         .player-char { text-shadow: 0 0 30px rgba(0, 255, 157, 0.5); }
         .boss-char { text-shadow: 0 0 30px rgba(255, 85, 0, 0.5); } 
 
-        /* درع الصد */
         .shield-fx {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
             width: 140px; height: 140px; border-radius: 50%; border: 4px solid #00aaff;
@@ -111,7 +112,6 @@
         .anim-b-attack { animation: bossAttack 0.4s ease-in-out; }
         .anim-damage { animation: takeDamage 0.4s ease-in-out; }
 
-        /* مؤثر السيف والضربة */
         .slash-fx {
             position: absolute; font-size: 4rem; opacity: 0; pointer-events: none;
             z-index: 20; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -130,7 +130,6 @@
         @keyframes popUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(0.5); } 100% { opacity: 0; transform: translate(-50%, -50px) scale(1.2); } }
         .crit-text.active { animation: popUp 0.8s ease-out forwards; }
 
-        /* ------------------ واجهة الأسئلة ------------------ */
         .ui-layer {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 100;
             background: rgba(15, 10, 25, 0.95); border-top: 2px solid var(--ui-glow);
@@ -154,19 +153,18 @@
         h2 { margin: 0 0 15px 0; color: #fff; font-size: 1.1rem; line-height: 1.5; }
         
         .options { display: flex; flex-direction: column; gap: 10px; width: 100%; }
-        button.opt-btn { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 12px; font-size: 0.95rem; font-family: 'Tajawal', sans-serif; cursor: pointer; transition: all 0.2s; text-align: center; font-weight: bold;}
+        button.opt-btn { background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 12px; font-size: 0.95rem; font-family: 'Tajawal', sans-serif; cursor: pointer; transition: all 0.2s; text-align: center; font-weight: bold; direction: ltr; }
         button.opt-btn:disabled { opacity: 0.8; cursor: default; }
 
         .speech-bubble { background: white; color: black; padding: 6px 12px; border-radius: 12px; font-size: 0.95rem; font-weight: 900; margin-bottom: 15px; display: none; opacity: 0; transition: opacity 0.3s; }
 
-        #explanation-box { display: none; margin-top: 15px; background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); animation: fadeIn 0.4s; text-align: center; }
+        #explanation-box { display: none; margin-top: 15px; background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); animation: fadeIn 0.4s; text-align: center; direction: rtl;}
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         #explanation-box h3 { margin: 0 0 10px 0; font-size: 1.05rem; }
         #explanation-box p { margin: 0 0 15px 0; font-size: 0.9rem; line-height: 1.6; color: #e2e8f0; }
 
         #next-btn { background: linear-gradient(90deg, #9600ff, #00ff9d); color: #000; font-weight: 900; width: 100%; border: none; padding: 15px; border-radius: 12px; cursor: pointer; font-size: 1.1rem; }
 
-        /* شاشة النهاية ونظام التقييم */
         #completion-screen { display: none; animation: fadeIn 0.8s; }
         .trophy { font-size: 4rem; margin: 0; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5));}
         .stars-container { font-size: 2.5rem; letter-spacing: 5px; color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.6); margin: 5px 0; min-height: 50px;}
@@ -193,13 +191,11 @@
 </head>
 <body>
 
-    <!-- أدوات الواجهة العلوية (كتم الصوت) -->
     <div class="top-hud">
-        <div></div> <!-- مساحة فارغة لترتيب الزر -->
+        <div></div> 
         <button class="mute-btn" id="mute-btn" onclick="toggleMute()">🔊</button>
     </div>
 
-    <!-- أشرطة الصحة -->
     <div class="health-boards">
         <div class="hp-container player">
             <div class="hp-name player"><span>🥷 البطل</span> <span id="p-hp-txt">100%</span></div>
@@ -211,7 +207,6 @@
         </div>
     </div>
 
-    <!-- ساحة القتال -->
     <div class="arena">
         <div class="character player-char" id="player-sprite">
             🥷
@@ -226,11 +221,10 @@
         </div>
     </div>
 
-    <!-- واجهة الأسئلة -->
     <div class="ui-layer" id="ui-container">
         <div id="quiz-content">
             <div class="top-tools">
-                <div class="q-counter" id="q-counter">الجولة 1 من 10</div>
+                <div class="q-counter" id="q-counter">الجولة 1 من 17</div>
                 <button class="shield-btn" id="shield-btn" onclick="activateShield()">🛡️ تفعيل الدرع (1)</button>
             </div>
             
@@ -257,7 +251,7 @@
             <h2 id="final-praise">جاري الحساب...</h2>
             <p id="final-desc">جاري التقييم...</p>
             
-            <div class="score-text" id="final-score">0 / 10</div>
+            <div class="score-text" id="final-score">0 / 17</div>
             
             <div class="action-btns">
                 <button class="btn-review" onclick="showReview()">سجل المعركة 📋</button>
@@ -273,126 +267,80 @@
     </div>
 
     <script>
-        // ------------------ نظام الصوت والموسيقى ------------------
         let audioCtx = null;
         let isMuted = false;
         
-        // موسيقى خلفية ملحمية (رابط مجاني يعمل كخلفية للقتال)
         let bgMusic = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3');
-        bgMusic.loop = true;
-        bgMusic.volume = 0.3;
+        bgMusic.loop = true; bgMusic.volume = 0.3;
 
         function toggleMute() {
             isMuted = !isMuted;
             bgMusic.muted = isMuted;
             document.getElementById('mute-btn').innerText = isMuted ? '🔇' : '🔊';
-            
-            if (audioCtx) {
-                if (isMuted) audioCtx.suspend();
-                else audioCtx.resume();
-            }
+            if (audioCtx) { if (isMuted) audioCtx.suspend(); else audioCtx.resume(); }
         }
 
         function initAudio() {
-            if (!audioCtx) {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                audioCtx = new AudioContext();
-            }
+            if (!audioCtx) { const AudioContext = window.AudioContext || window.webkitAudioContext; audioCtx = new AudioContext(); }
             if (audioCtx.state === 'suspended' && !isMuted) audioCtx.resume();
-            
-            if (bgMusic.paused && !isMuted) {
-                bgMusic.play().catch(e => console.log("المتصفح منع تشغيل الموسيقى التلقائي"));
-            }
+            if (bgMusic.paused && !isMuted) { bgMusic.play().catch(e => console.log("المتصفح منع التلقائي")); }
         }
 
         function playSound(type) {
             if (!audioCtx || isMuted) return;
-            const osc = audioCtx.createOscillator(); 
-            const gainNode = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
             osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-            
-            if (type === 'slash') { 
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2); 
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'hit') { 
-                osc.type = 'square'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2); 
-                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'shield') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'heal') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.4);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'tick') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-            }
+            if (type === 'slash') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'hit') { osc.type = 'square'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2); gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'shield') { osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'heal') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.4); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'tick') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.02, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05); osc.start(); osc.stop(audioCtx.currentTime + 0.05); }
         }
 
         function triggerVibration(type) {
             if (!navigator.vibrate) return;
-            if (type === 'click') navigator.vibrate(30);
-            else if (type === 'hit') navigator.vibrate([100, 50, 100]); 
-            else if (type === 'damage') navigator.vibrate(300); 
-            else if (type === 'crit') navigator.vibrate([150, 50, 150, 50, 150]); 
-            else if (type === 'shield') navigator.vibrate(50);
+            if (type === 'click') navigator.vibrate(30); else if (type === 'hit') navigator.vibrate([100, 50, 100]); else if (type === 'damage') navigator.vibrate(300); else if (type === 'crit') navigator.vibrate([150, 50, 150, 50, 150]); else if (type === 'shield') navigator.vibrate(50);
         }
 
         function createParticles(targetType) {
-            const arena = document.querySelector('.arena');
             const target = targetType === 'boss' ? document.getElementById('boss-sprite') : document.getElementById('player-sprite');
             const colors = targetType === 'boss' ? ['#ff5500', '#ff0000', '#ffd700'] : ['#00ff9d', '#ffffff', '#00aaff'];
-            
-            const rect = target.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
+            const rect = target.getBoundingClientRect(); const centerX = rect.left + rect.width / 2; const centerY = rect.top + rect.height / 2;
             for (let i = 0; i < 20; i++) {
-                let p = document.createElement('div');
-                p.style.position = 'fixed'; p.style.width = '10px'; p.style.height = '10px';
-                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                p.style.borderRadius = '50%'; p.style.pointerEvents = 'none'; p.style.zIndex = '1000';
+                let p = document.createElement('div'); p.style.position = 'fixed'; p.style.width = '10px'; p.style.height = '10px';
+                p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]; p.style.borderRadius = '50%'; p.style.pointerEvents = 'none'; p.style.zIndex = '1000';
                 p.style.left = centerX + 'px'; p.style.top = centerY + 'px';
-                
-                let angle = Math.random() * Math.PI * 2;
-                let speed = Math.random() * 80 + 40;
-                let tx = Math.cos(angle) * speed;
-                let ty = Math.sin(angle) * speed;
-                
-                p.animate([
-                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-                ], { duration: 500, easing: 'ease-out' });
-                
-                document.body.appendChild(p);
-                setTimeout(() => p.remove(), 500);
+                let angle = Math.random() * Math.PI * 2; let speed = Math.random() * 80 + 40; let tx = Math.cos(angle) * speed; let ty = Math.sin(angle) * speed;
+                p.animate([ { transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 } ], { duration: 500, easing: 'ease-out' });
+                document.body.appendChild(p); setTimeout(() => p.remove(), 500);
             }
         }
 
-        // الأسئلة 
         let quizData = [
-            { q: "ما هو العنصر الكيميائي الأكثر وفرة في الغلاف الجوي للأرض؟", options: ["الأوكسجين", "النيتروجين", "الهيدروجين", "الكاربون"], correct: 1, explanation: "النيتروجين يشكل حوالي 78% من الغلاف الجوي للأرض." },
-            { q: "من هو القائد العسكري الذي هزم نابليون في معركة واترلو؟", options: ["نيلسون", "دوق ولينغتون", "ألكسندر الأول", "كوتوزوف"], correct: 1, explanation: "دوق ولينغتون البريطاني هو من قاد قوات الحلفاء لهزيمة نابليون عام 1815." },
-            { q: "ما هو أعمق خندق محيطي في العالم؟", options: ["خندق تونغا", "خندق ماريانا", "خندق بورتوريكو", "خندق اليابان"], correct: 1, explanation: "خندق ماريانا في المحيط الهادئ هو أعمق نقطة معروفة على سطح الأرض." },
-            { q: "أي عضو في جسم الإنسان يستهلك النسبة الأكبر من طاقة الجسم؟", options: ["القلب", "الكبد", "الدماغ", "العضلات"], correct: 2, explanation: "الدماغ يستهلك حوالي 20% من طاقة الجسم رغم صغر حجمه." },
-            { q: "في أي عام تم إطلاق أول قمر صناعي (سبوتنيك 1) إلى الفضاء؟", options: ["1957", "1961", "1969", "1953"], correct: 0, explanation: "أطلق الاتحاد السوفيتي سبوتنيك 1 في عام 1957 لتبدأ عصر الفضاء." },
-            { q: "ما هي أصغر دولة في العالم من حيث المساحة؟", options: ["موناكو", "سان مارينو", "الفاتيكان", "ليختنشتاين"], correct: 2, explanation: "الفاتيكان هي أصغر دولة مستقلة في العالم." },
-            { q: "من هو الفيلسوف اليوناني الذي كان تلميذاً لسقراط ومعلماً لأرسطو؟", options: ["فيثاغورس", "ديوجين", "أفلاطون", "إبيقور"], correct: 2, explanation: "أفلاطون تتلمذ على يد سقراط، وأسس الأكاديمية التي درس فيها أرسطو." },
-            { q: "ما هو الاسم القديم لمدينة إسطنبول قبل أن تُسمى القسطنطينية؟", options: ["روما الجديدة", "بيزنطة", "أثينا الصغرى", "الأناضول"], correct: 1, explanation: "كانت تُعرف قديماً باسم بيزنطة قبل أن يغير الإمبراطور قسطنطين اسمها." },
-            { q: "أي من هذه اللغات تُعتبر أقدم لغة مكتوبة في العالم؟", options: ["الهيروغليفية", "السومرية", "الصينية القديمة", "السنسكريتية"], correct: 1, explanation: "اللغة السومرية في بلاد الرافدين (العراق) تُعتبر أقدم لغة موثقة كتابياً بالكتابة المسمارية." },
-            { q: "ما هو المعدن الذي يُعتبر المكون الأساسي لحجر الزمرد الكريم؟", options: ["الكوارتز", "البريل", "الكوروندوم", "التوباز"], correct: 1, explanation: "الزمرد هو صنف من معدن البريل يكتسب لونه الأخضر من شوائب الكروم." }
+            { q: "في دالة الطلب \\( Qd = f(P, MI, Pn) \\)، ماذا يمثل الرمز \\( MI \\)؟", options: ["الدخل النقدي للمستهلك", "سعر السلعة نفسها", "أسعار السلع البديلة والمكملة", "الكمية المعروضة من السلعة"], correct: 0, explanation: "\\( MI \\) يمثل الدخل النقدي." },
+            { q: "ارتفع سعر سلعة من 100 إلى 110 وحدة نقدية، فانخفضت الكمية المطلوبة من 1000 إلى 600 وحدة. ما مرونة الطلب السعرية؟", options: ["-4", "-0.4", "-0.25", "+4"], correct: 0, explanation: "\\( \\frac{600-1000}{110-100} \\times \\frac{100}{1000} = -40 \\times 0.1 = -4 \\) (طلب مرن)." },
+            { q: "انخفض سعر سلعة من 200 إلى 100 وحدة نقدية، فزادت الكمية المطلوبة من 1000 إلى 1050 وحدة. ما مرونة الطلب السعرية؟", options: ["-0.5", "-0.1", "-10", "+0.1"], correct: 1, explanation: "\\( \\frac{1050-1000}{100-200} \\times \\frac{200}{1000} = -0.5 \\times 0.2 = -0.1 \\) (طلب غير مرن)." },
+            { q: "انخفض سعر سلعة من 200 إلى 150 وحدة نقدية، فزادت الكمية المطلوبة من 200 إلى 250 وحدة. ما مرونة الطلب السعرية؟", options: ["-0.5", "-2", "-1", "+1"], correct: 2, explanation: "\\( \\frac{250-200}{150-200} \\times \\frac{200}{200} = -1 \\) (متكافئ المرونة)." },
+            { q: "عند السعر 20 كانت الكمية المطلوبة 43 وحدة، وعند السعر 10 أصبحت 75 وحدة. ما مرونة الطلب (الانتقال من 20 إلى 10)؟", options: ["-0.67", "-0.43", "+1.49", "-1.49"], correct: 3, explanation: "\\( \\frac{75-43}{10-20} \\times \\frac{20}{43} = \\frac{-32}{10} \\times \\frac{20}{43} \\approx -1.49 \\)." },
+            { q: "عند السعر 10 كانت الكمية المطلوبة 75 وحدة، وعند السعر 20 أصبحت 43 وحدة. ما مرونة الطلب (الانتقال من 10 إلى 20)؟", options: ["-1.49", "-0.43", "-2.33", "+0.43"], correct: 1, explanation: "\\( \\frac{43-75}{20-10} \\times \\frac{10}{75} = \\frac{-32}{10} \\times \\frac{10}{75} \\approx -0.43 \\). النتيجة تختلف عن السؤال السابق لأن نقطة البداية تغيّرت." },
+            { q: "باستخدام \\( MR = P[1 - (1/Ed)] \\)، إذا كانت \\( Ed = 2 \\) و \\( P = 4 \\)، فكم يساوي الإيراد الحدي؟", options: ["6", "2", "0", "8"], correct: 1, explanation: "\\( 4(1 - 1/2) = 2 \\)." },
+            { q: "إذا كانت \\( Ed = 1 \\) و \\( P = 4 \\)، فكم يساوي الإيراد الحدي \\( MR \\)؟", options: ["4", "1", "0", "-4"], correct: 2, explanation: "\\( 4(1 - 1/1) = 0 \\)." },
+            { q: "إذا كانت \\( Ed = 0.2 \\) و \\( P = 4 \\)، فكم يساوي الإيراد الحدي \\( MR \\)؟", options: ["16", "3.2", "-16", "-4"], correct: 2, explanation: "\\( 4(1 - 1/0.2) = 4(1 - 5) = -16 \\)." },
+            { q: "إذا كان الطلب على سلعة مرناً (\\( Ed > 1 \\)) وقام المنتج برفع السعر، فماذا يحدث للإيراد الكلي (\\( TR \\))؟", options: ["ينخفض", "يزداد", "يبقى ثابتاً", "لا يمكن تحديده"], correct: 0, explanation: "بالطلب المرن، رفع السعر ينقص الإيراد الكلي." },
+            { q: "ارتفع دخل مستهلك من 1000 إلى 1200 وحدة نقدية، فزادت الكمية المطلوبة من سلعة من 50 إلى 65 وحدة. ما قيمة المرونة الدخلية (\\( Ed_I = \\frac{\\Delta Q}{\\Delta I} \\times \\frac{I}{Q} \\))؟", options: ["0.67", "0.075", "3", "1.5"], correct: 3, explanation: "\\( \\frac{15}{200} \\times \\frac{1000}{50} = 0.075 \\times 20 = 1.5 \\)." },
+            { q: "ارتفع سعر السلعة (y) من 10 إلى 12 وحدة نقدية، فزادت الكمية المطلوبة من السلعة (x) من 100 إلى 130 وحدة. ما المرونة التقاطعية؟", options: ["-1.5", "0.67", "1.5", "0.15"], correct: 2, explanation: "\\( \\frac{30}{2} \\times \\frac{10}{100} = 15 \\times 0.1 = 1.5 \\)، والإشارة موجبة تعني أن السلعتين بديلتان." },
+            { q: "زادت تكاليف ترويج السلعة (x) من 200 إلى 250 وحدة نقدية، فزادت الكمية المطلوبة منها من 400 إلى 440 وحدة. ما المرونة الترويجية (\\( Ed_s = \\frac{\\Delta Qdx}{\\Delta CDx} \\times \\frac{CDx}{Qdx} \\))؟", options: ["0.8", "2.5", "0.2", "0.4"], correct: 3, explanation: "\\( \\frac{40}{50} \\times \\frac{200}{400} = 0.8 \\times 0.5 = 0.4 \\)." },
+            { q: "كان سعر سلعة 4 دولارات وكمية المعروض 100 وحدة، ثم ارتفع السعر إلى 5 دولارات فأصبحت الكمية المعروضة 150 وحدة. ما مرونة العرض \\( E_s \\)؟", options: ["0.5", "1.25", "2", "4"], correct: 2, explanation: "\\( \\frac{50}{1} \\times \\frac{4}{100} = 2 \\)." },
+            { q: "دالة الطلب \\( Qd = 100 - 2P \\) ودالة العرض \\( Qs = -20 + 4P \\). ما سعر التوازن؟", options: ["13.3", "30", "60", "20"], correct: 3, explanation: "\\( 100 - 2P = -20 + 4P \\implies 120 = 6P \\implies P = 20 \\)." },
+            { q: "في نفس السوق (\\( Qd = 100 - 2P \\) و \\( Qs = -20 + 4P \\))، ما الكمية التوازنية؟", options: ["40", "60", "100", "120"], correct: 1, explanation: "\\( Q = 100 - 2(20) = 60 \\)." },
+            { q: "من دالة الطلب \\( Qd = 100 - 2P \\)، ما مرونة النقطة (\\( E_p = \\frac{\\partial Q}{\\partial P} \\times \\frac{P}{Q} \\)) عند \\( P = 20 \\)؟", options: ["-2", "-1.5", "-0.33", "-0.67"], correct: 3, explanation: "عند \\( P = 20 \\) تكون \\( Q = 60 \\) و \\( \\frac{\\partial Q}{\\partial P} = -2 \\)، يعني \\( E_p = -2 \\times \\frac{20}{60} = -0.67 \\)." }
         ];
 
         let totalQuestions = quizData.length;
-        let damagePerHit = 100 / totalQuestions; 
+        let bDamagePerHit = 100 / totalQuestions; 
+        
+        // الضرر الخفيف: البطل ينقص 5% فقط بالخطأ، مما يضمن بقاءه حياً حتى لو أخطأ في كل الأسئلة
+        let pDamagePerHit = 5; 
         
         let currentQ = 0; let score = 0; let userAnswers = [];
         let timeLeft = 30; let maxTime = 30; let timerInterval; let tickInterval;
@@ -403,83 +351,54 @@
         let isShieldAvailable = true;
         let isShieldActive = false;
 
-        const pSprite = document.getElementById('player-sprite');
-        const bSprite = document.getElementById('boss-sprite');
-        const pHitFx = document.getElementById('player-hit-fx');
-        const bHitFx = document.getElementById('boss-hit-fx');
-        const pShield = document.getElementById('p-shield');
-        const bCritTxt = document.getElementById('b-crit-txt');
+        const pSprite = document.getElementById('player-sprite'); const bSprite = document.getElementById('boss-sprite');
+        const pHitFx = document.getElementById('player-hit-fx'); const bHitFx = document.getElementById('boss-hit-fx');
+        const pShield = document.getElementById('p-shield'); const bCritTxt = document.getElementById('b-crit-txt');
         const pHealTxt = document.getElementById('p-heal-txt');
-        
-        const pBar = document.getElementById('p-hp-bar');
-        const bBar = document.getElementById('b-hp-bar');
-        const pTxt = document.getElementById('p-hp-txt');
-        const bTxt = document.getElementById('b-hp-txt');
-
-        const bubble = document.getElementById('speech-bubble'); 
-        const qText = document.getElementById('question-text'); const optsContainer = document.getElementById('options-container');
-        const expBox = document.getElementById('explanation-box'); const resTitle = document.getElementById('result-title');
-        const expText = document.getElementById('explanation-text'); const nextBtn = document.getElementById('next-btn');
-        const timerBar = document.getElementById('timer-bar'); const uiContainer = document.getElementById('ui-container');
-        const shieldBtn = document.getElementById('shield-btn');
+        const pBar = document.getElementById('p-hp-bar'); const bBar = document.getElementById('b-hp-bar');
+        const pTxt = document.getElementById('p-hp-txt'); const bTxt = document.getElementById('b-hp-txt');
+        const bubble = document.getElementById('speech-bubble'); const qText = document.getElementById('question-text'); 
+        const optsContainer = document.getElementById('options-container'); const expBox = document.getElementById('explanation-box'); 
+        const resTitle = document.getElementById('result-title'); const expText = document.getElementById('explanation-text'); 
+        const nextBtn = document.getElementById('next-btn'); const timerBar = document.getElementById('timer-bar'); 
+        const uiContainer = document.getElementById('ui-container'); const shieldBtn = document.getElementById('shield-btn');
         const finalStars = document.getElementById('final-stars');
 
         function updateHPUI() {
-            pBar.style.width = `${bossHP <= 0 ? 0 : playerHP}%`; 
-            pTxt.innerText = `${Math.ceil(playerHP)}%`;
-            
-            bBar.style.width = `${bossHP}%`; 
-            bTxt.innerText = `${Math.ceil(bossHP)}%`;
-            
+            pBar.style.width = `${playerHP}%`; pTxt.innerText = `${Math.ceil(playerHP)}%`;
+            bBar.style.width = `${bossHP}%`; bTxt.innerText = `${Math.ceil(bossHP)}%`;
             if(playerHP <= 40) pBar.style.background = "linear-gradient(90deg, #ff9d00, #ff3232)";
             else pBar.style.background = "linear-gradient(90deg, #00b09b, var(--player-color))";
         }
 
         function activateShield() {
             if (isShieldAvailable && !isShieldActive) {
-                triggerVibration('shield');
-                playSound('shield');
-                isShieldActive = true;
-                isShieldAvailable = false;
-                shieldBtn.innerText = "🛡️ درع مُفعل!";
-                shieldBtn.classList.add('active-glow');
-                shieldBtn.disabled = true;
-                pShield.classList.add('active'); 
+                triggerVibration('shield'); playSound('shield'); isShieldActive = true; isShieldAvailable = false;
+                shieldBtn.innerText = "🛡️ درع مُفعل!"; shieldBtn.classList.add('active-glow'); shieldBtn.disabled = true; pShield.classList.add('active'); 
             }
         }
 
         function startFresh() {
-            initAudio(); // تفعيل الصوت والموسيقى بالبداية
-            document.getElementById('completion-screen').style.display = 'none';
-            document.getElementById('review-screen').style.display = 'none';
+            initAudio(); 
+            document.getElementById('completion-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'none';
             document.getElementById('quiz-content').style.display = 'block';
             
             currentQ = 0; score = 0; userAnswers = [];
             playerHP = 100; bossHP = 100; comboStreak = 0;
             isShieldAvailable = true; isShieldActive = false;
-            totalQuestions = quizData.length;
-            damagePerHit = 100 / totalQuestions;
             
-            shieldBtn.innerText = "🛡️ تفعيل الدرع (1)";
-            shieldBtn.classList.remove('active-glow');
-            shieldBtn.disabled = false;
-            pShield.classList.remove('active');
-            
+            shieldBtn.innerText = "🛡️ تفعيل الدرع (1)"; shieldBtn.classList.remove('active-glow'); shieldBtn.disabled = false; pShield.classList.remove('active');
             updateHPUI();
             
             pSprite.innerText = "🥷"; pSprite.appendChild(bHitFx); pSprite.appendChild(pShield); pSprite.appendChild(pHealTxt);
             bSprite.innerText = "🐉"; bSprite.appendChild(pHitFx); bSprite.appendChild(bCritTxt);
-
             loadQ();
         }
 
         function startTimer() {
-            timeLeft = maxTime;
-            timerBar.style.width = '100%'; timerBar.classList.remove('timer-warning');
+            timeLeft = maxTime; timerBar.style.width = '100%'; timerBar.classList.remove('timer-warning');
             clearInterval(timerInterval); clearInterval(tickInterval);
-            
             if(!isMuted) tickInterval = setInterval(() => playSound('tick'), 1000);
-
             timerInterval = setInterval(() => {
                 timeLeft--; timerBar.style.width = `${(timeLeft / maxTime) * 100}%`;
                 if (timeLeft === 5) { timerBar.classList.add('timer-warning'); clearInterval(tickInterval); if(!isMuted) tickInterval = setInterval(() => playSound('tick'), 300); }
@@ -494,42 +413,37 @@
             }
             
             document.body.classList.remove('shake-screen');
-            pSprite.classList.remove('anim-p-attack', 'anim-damage');
-            bSprite.classList.remove('anim-b-attack', 'anim-damage');
-            pHitFx.classList.remove('active'); bHitFx.classList.remove('active');
-            bCritTxt.classList.remove('active'); pHealTxt.classList.remove('active');
+            pSprite.classList.remove('anim-p-attack', 'anim-damage'); bSprite.classList.remove('anim-b-attack', 'anim-damage');
+            pHitFx.classList.remove('active'); bHitFx.classList.remove('active'); bCritTxt.classList.remove('active'); pHealTxt.classList.remove('active');
 
             const current = quizData[currentQ];
             document.getElementById('q-counter').innerText = `الجولة ${currentQ + 1} من ${totalQuestions}`;
-            qText.innerText = current.q; 
+            qText.innerHTML = current.q; 
             
             optsContainer.innerHTML = '';
             expBox.style.display = 'none'; bubble.style.display = 'none'; bubble.style.opacity = '0';
             
-            let btnText = (currentQ === quizData.length - 1) ? "إنهاء المعركة 🏁" : "الجولة القادمة ⚔️";
-            nextBtn.innerText = btnText;
-            nextBtn.style.background = (currentQ === quizData.length - 1) ? "linear-gradient(90deg, #ff9d00, #ff3232)" : "linear-gradient(90deg, #9600ff, #00ff9d)";
+            nextBtn.innerText = "الجولة القادمة ⚔️"; nextBtn.style.background = "linear-gradient(90deg, #9600ff, #00ff9d)";
 
             current.options.forEach((opt, idx) => {
-                let btn = document.createElement('button'); btn.className = 'opt-btn'; btn.innerText = opt;
+                let btn = document.createElement('button'); btn.className = 'opt-btn'; btn.innerHTML = opt;
                 btn.onclick = () => { initAudio(); triggerVibration('click'); checkAns(idx, btn); };
                 optsContainer.appendChild(btn);
             });
+            
+            if (window.MathJax) MathJax.typesetPromise([qText, optsContainer]).catch(err => console.log(err));
+            
             startTimer(); uiContainer.scrollTop = 0;
         }
 
         function checkAns(idx, btn) {
             clearInterval(timerInterval); clearInterval(tickInterval);
-            
-            pSprite.classList.remove('anim-p-attack', 'anim-damage');
-            bSprite.classList.remove('anim-b-attack', 'anim-damage');
+            pSprite.classList.remove('anim-p-attack', 'anim-damage'); bSprite.classList.remove('anim-b-attack', 'anim-damage');
             void pSprite.offsetWidth; void bSprite.offsetWidth;
 
             const timeTaken = maxTime - timeLeft;
             const current = quizData[currentQ]; const btns = optsContainer.querySelectorAll('button');
             const isCorrect = (idx === current.correct); const isTimeout = (idx === -1);
-            
-            // سرعة الإجابة (إذا جابها بأول 5 ثواني) تنطي دبل نقاط
             const isFast = (isCorrect && timeTaken <= 5 && !isTimeout);
 
             userAnswers.push({
@@ -544,85 +458,59 @@
             bubble.style.display = 'block'; setTimeout(() => bubble.style.opacity = '1', 10);
 
             if (isCorrect) {
-                comboStreak++;
-                score += isFast ? 2 : 1; 
-                playSound('slash');
-                
-                bossHP -= damagePerHit;
-                if(bossHP < 0.1) bossHP = 0; 
-
+                comboStreak++; score += isFast ? 2 : 1; playSound('slash');
+                bossHP -= bDamagePerHit; if(bossHP < 0.1) bossHP = 0; 
                 pSprite.classList.add('anim-p-attack');
                 setTimeout(() => { 
-                    bSprite.classList.add('anim-damage'); 
-                    bHitFx.classList.add('active'); 
-                    createParticles('boss'); 
-                    if (isFast) {
-                        triggerVibration('crit');
-                        bCritTxt.classList.add('active');
-                    } else {
-                        triggerVibration('hit');
-                    }
+                    bSprite.classList.add('anim-damage'); bHitFx.classList.add('active'); createParticles('boss'); 
+                    if (isFast) { triggerVibration('crit'); bCritTxt.classList.add('active'); } else { triggerVibration('hit'); }
                 }, 150);
 
                 let titleText = isFast ? `⚡ أداء مثالي! (+2 نقطة)` : `⚔️ ضربة ناجحة (+1 نقطة)`;
                 
                 if (comboStreak === 3) {
-                    playerHP = Math.min(100, playerHP + damagePerHit); 
-                    comboStreak = 0; 
-                    playSound('heal');
-                    pHealTxt.innerText = `+${Math.ceil(damagePerHit)}% 🧪`;
-                    pHealTxt.classList.add('active');
+                    playerHP = Math.min(100, playerHP + bDamagePerHit); comboStreak = 0; playSound('heal');
+                    pHealTxt.innerText = `+${Math.ceil(bDamagePerHit)}% 🧪`; pHealTxt.classList.add('active');
                     titleText += " + 🧪 كومبو علاجي!";
                 }
-
                 resTitle.innerText = titleText; resTitle.style.color = isFast ? "#ffd700" : "#00ff9d";
                 bubble.innerText = isFast ? "خوش سرعة! 🔥" : "هجوم ناجح! 🥷"; bubble.style.color = "#059669";
-
             } else {
-                comboStreak = 0; 
-                bSprite.classList.add('anim-b-attack');
-
+                comboStreak = 0; bSprite.classList.add('anim-b-attack');
                 if (isShieldActive) {
-                    isShieldActive = false;
-                    shieldBtn.innerText = "🛡️ الدرع تكسر!";
-                    shieldBtn.classList.remove('active-glow');
-                    playSound('shield');
-                    
-                    setTimeout(() => { 
-                        pShield.classList.remove('active'); 
-                        pHitFx.innerText = "🛡️"; pHitFx.classList.add('active');
-                    }, 150);
-                    
+                    isShieldActive = false; shieldBtn.innerText = "🛡️ الدرع تكسر!"; shieldBtn.classList.remove('active-glow'); playSound('shield');
+                    setTimeout(() => { pShield.classList.remove('active'); pHitFx.innerText = "🛡️"; pHitFx.classList.add('active'); }, 150);
                     resTitle.innerText = "🛡️ الدرع صد الضربة!"; resTitle.style.color = "#00aaff";
                     bubble.innerText = "حماك الدرع هالمرة! 💨"; bubble.style.color = "#00aaff";
                 } else {
-                    playSound('hit'); 
-                    playerHP -= damagePerHit; 
-                    if(playerHP < 0.1) playerHP = 0;
-                    
-                    setTimeout(() => { 
-                        pSprite.classList.add('anim-damage'); 
-                        pHitFx.innerText = "🔥"; pHitFx.classList.add('active'); 
-                        createParticles('player');
-                        document.body.classList.add('shake-screen');
-                        triggerVibration('damage');
-                    }, 150);
-                    
-                    if (isTimeout) { resTitle.innerText = "⏰ تلقيت ضربة!"; bubble.innerText = "احذر الوقت! ⏰"; } 
-                    else { resTitle.innerText = "❌ تلقيت ضرر!"; bubble.innerText = "دفاعك مكشوف! 🐉"; }
+                    playSound('hit'); playerHP -= pDamagePerHit; if(playerHP < 0.1) playerHP = 0;
+                    setTimeout(() => { pSprite.classList.add('anim-damage'); pHitFx.innerText = "🔥"; pHitFx.classList.add('active'); createParticles('player'); document.body.classList.add('shake-screen'); triggerVibration('damage'); }, 150);
+                    if (isTimeout) { resTitle.innerText = "⏰ تلقيت ضربة خفيفة!"; bubble.innerText = "احذر الوقت! ⏰"; } else { resTitle.innerText = "❌ تلقيت ضرر خفيف!"; bubble.innerText = "دفاعك مكشوف! 🐉"; }
                     resTitle.style.color = "#ff3232"; bubble.style.color = "#dc2626";
                 }
             }
 
             updateHPUI();
-            expText.innerText = current.explanation; expBox.style.display = 'block';
+            expText.innerHTML = current.explanation; expBox.style.display = 'block';
+            if (window.MathJax) MathJax.typesetPromise([expBox]).catch(err => console.log(err));
+
+            let isGameOver = (currentQ === quizData.length - 1);
+            if (isGameOver) {
+                nextBtn.innerText = "النتيجة النهائية 🏁";
+                nextBtn.style.background = "linear-gradient(90deg, #ff9d00, #ff3232)";
+            }
+            
             setTimeout(() => { uiContainer.scrollTo({ top: uiContainer.scrollHeight, behavior: 'smooth' }); }, 100);
         }
 
         function moveToNext() {
             triggerVibration('click');
-            currentQ++;
-            loadQ(); 
+            if (currentQ >= quizData.length - 1) {
+                showCompletion();
+            } else {
+                currentQ++;
+                loadQ(); 
+            }
         }
 
         function shootConfetti() {
@@ -637,28 +525,22 @@
 
         function showCompletion() {
             document.getElementById('quiz-content').style.display = 'none'; bubble.style.display = 'none'; 
-            
             const praiseText = document.getElementById('final-praise'); const descText = document.getElementById('final-desc');
             const finalScoreObj = document.getElementById('final-score'); const trophy = document.getElementById('final-trophy');
-            
-            finalStars.innerText = ""; // تصفير النجوم بالبداية
+            finalStars.innerText = ""; 
 
             if (playerHP > bossHP) {
-                // نظام النجوم اذا فاز
-                if (playerHP >= 80) finalStars.innerText = "⭐⭐⭐";
-                else if (playerHP >= 40) finalStars.innerText = "⭐⭐";
-                else finalStars.innerText = "⭐";
-
+                if (playerHP >= 80) finalStars.innerText = "⭐⭐⭐"; else if (playerHP >= 40) finalStars.innerText = "⭐⭐"; else finalStars.innerText = "⭐";
                 praiseText.innerText = "الانتصار! 🏆"; praiseText.style.color = "#00ff9d"; finalScoreObj.style.color = "#00ff9d";
-                descText.innerText = bossHP === 0 ? "عاشت ايدك! جاوبت كل الأسئلة وقضيت عالتنين نهائياً." : "قضيت على التنين بمهارة! دمك بقى أعلى منه بنهاية المعركة."; 
+                descText.innerText = bossHP === 0 ? "عاشت ايدك! جاوبت الأسئلة وقضيت عالتنين نهائياً." : "تفوقك واضح! خلصت الأسئلة وصحتك أعلى من التنين."; 
                 trophy.innerText = "🥷"; bSprite.innerText = "💀"; playSound('slash'); shootConfetti();
             } else if (playerHP === bossHP) {
                 praiseText.innerText = "تعادل! ⚔️"; praiseText.style.color = "#ffd700"; finalScoreObj.style.color = "#ffd700";
-                descText.innerText = "المعركة انتهت بالتعادل. اثنينكم تعبتوا، تحتاج تدريب أكثر للمواجهة الجاية."; 
+                descText.innerText = "خلصت الأسئلة والمعركة انتهت بالتعادل. اثنينكم بقيتوا صامدين!"; 
                 trophy.innerText = "⚖️"; 
             } else {
                 praiseText.innerText = "هزيمة! 💀"; praiseText.style.color = "#ff3232"; finalScoreObj.style.color = "#ff3232";
-                descText.innerText = "التنين تفوق عليك هالمرة.. راجع معلوماتك وارجع انتقم!"; 
+                descText.innerText = "خلصت الأسئلة بس التنين تفوق عليك بنهاية المعركة.. راجع معلوماتك وارجع انتقم!"; 
                 trophy.innerText = "🐉"; pSprite.innerText = "👻"; playSound('hit');
             }
 
@@ -669,17 +551,16 @@
         function showReview() {
             document.getElementById('completion-screen').style.display = 'none';
             const reviewList = document.getElementById('review-list'); reviewList.innerHTML = ''; 
-
             userAnswers.forEach((ans, index) => {
                 let div = document.createElement('div'); div.className = 'review-item';
                 let userStatus = ans.isCorrect ? `<span class="ans-correct">✅ ${ans.userPicked}</span>` : `<span class="ans-wrong">❌ ${ans.userPicked}</span> <br>(الصحيح: ${ans.correctAnswer})`;
                 div.innerHTML = `<div class="review-q">الجولة ${index + 1}: ${ans.question}</div><div class="review-ans">إجابتك: ${userStatus}</div><div class="review-exp">💡 <b>توضيح:</b> ${ans.explanation}</div>`;
                 reviewList.appendChild(div);
             });
+            if (window.MathJax) MathJax.typesetPromise([reviewList]).catch(err => console.log(err));
             document.getElementById('review-screen').style.display = 'block'; uiContainer.scrollTop = 0;
         }
 
-        // بدء اللعبة
         startFresh();
     </script>
 </body>
